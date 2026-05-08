@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta — ClientManager Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Toasts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="toast-container" id="toastContainer">
+        {% for category, message in messages %}
+        <div class="toast toast-{{ category }}">
+            <span class="toast-icon">
+                {% if category == 'success' %}✓{% elif category == 'error' %}✕{% elif category == 'warning' %}⚠{% else %}ℹ{% endif %}
+            </span>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="auth-page">
+        <div class="auth-card card">
+            <div class="auth-brand">
+                <h1>ClientManager</h1>
+                <p>Crea tu cuenta gratuita</p>
+            </div>
+
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="username" class="form-input" placeholder="Elige un nombre de usuario" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary auth-submit">Crear Cuenta</button>
+            </form>
+
+            <div class="auth-footer">
+                ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.toast').forEach(t => {
+                t.classList.add('fade-out');
+                setTimeout(() => t.remove(), 300);
+            });
+        }, 3500);
+        const saved = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+    </script>
+</body>
+</html>

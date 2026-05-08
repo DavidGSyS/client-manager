@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+    <div class="topbar-left">
+        <h1>Dashboard</h1>
+        <p>Gestiona tus clientes de forma profesional</p>
+    </div>
+    <div class="topbar-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">🌙</button>
+        <button class="btn btn-primary" id="openAddModal">+ Nuevo Cliente</button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="card stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Clientes</div>
+        <div class="stat-value">{{ total }}</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon">🆕</div>
+        <div class="stat-label">Nuevos (7 días)</div>
+        <div class="stat-value">+{{ new_this_week }}</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Activos</div>
+        <div class="stat-value">{{ active_pct }}%</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon">⏸️</div>
+        <div class="stat-label">Inactivos</div>
+        <div class="stat-value">{{ inactive }}</div>
+    </div>
+</div>
+
+<!-- Chart -->
+<div class="chart-section">
+    <div class="card chart-card">
+        <h3>Actividad — Últimos 7 días</h3>
+        <div class="chart-container">
+            <canvas id="clientsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Clients Table -->
+<div class="card clients-section">
+    <div class="clients-header">
+        <h2>Clientes ({{ total }})</h2>
+        <div class="clients-controls">
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar cliente...">
+            <select class="filter-select" id="statusFilter">
+                <option value="">Todos</option>
+                <option value="active">Activos</option>
+                <option value="inactive">Inactivos</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table" id="clientsTable">
+            <thead>
+                <tr>
+                    <th data-sort="name">Nombre <span class="sort-icon">↕</span></th>
+                    <th data-sort="email">Email <span class="sort-icon">↕</span></th>
+                    <th data-sort="company">Empresa <span class="sort-icon">↕</span></th>
+                    <th data-sort="phone">Teléfono <span class="sort-icon">↕</span></th>
+                    <th data-sort="status">Estado <span class="sort-icon">↕</span></th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="clientsBody">
+                {% for client in clients %}
+                <tr class="client-row animate-row" style="animation-delay: {{ loop.index0 * 0.04 }}s"
+                    data-name="{{ client.name|lower }}"
+                    data-email="{{ client.email|lower }}"
+                    data-company="{{ (client.company or '')|lower }}"
+                    data-status="{{ client.status }}">
+                    <td class="client-name">{{ client.name }}</td>
+                    <td class="client-email">{{ client.email }}</td>
+                    <td class="client-company">{{ client.company or '—' }}</td>
+                    <td class="client-phone">{{ client.phone or '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('dashboard.toggle_status', id=client.id) }}" class="badge badge-{{ client.status }}" title="Clic para cambiar estado">
+                            {{ 'Activo' if client.status == 'active' else 'Inactivo' }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            <a href="{{ url_for('dashboard.edit_client', id=client.id) }}" class="btn btn-sm btn-ghost">Editar</a>
+                            <a href="{{ url_for('dashboard.delete_client', id=client.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar a {{ client.name }}?')">Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not clients %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>Sin clientes aún</h3>
+            <p>Agrega tu primer cliente con el botón "+ Nuevo Cliente"</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="pagination" id="pagination">
+        <span class="pagination-info" id="paginationInfo"></span>
+        <div class="pagination-buttons" id="paginationButtons"></div>
+    </div>
+</div>
+
+<!-- Add Client Modal -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Nuevo Cliente</h2>
+            <button class="modal-close" id="closeAddModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form action="{{ url_for('dashboard.add_client') }}" method="POST">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" name="name" class="form-input" placeholder="Nombre completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" name="email" class="form-input" placeholder="correo@ejemplo.com" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="phone" class="form-input" placeholder="+57 300 000 0000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Empresa</label>
+                        <input type="text" name="company" class="form-input" placeholder="Nombre de empresa">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notas</label>
+                    <textarea name="notes" class="form-input" placeholder="Notas adicionales..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="cancelAddModal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Chart data from backend
+    const chartLabels = {{ chart_labels | tojson }};
+    const chartData = {{ chart_data | tojson }};
+</script>
+{% endblock %}

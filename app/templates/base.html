@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Client Manager Pro — Gestión de clientes profesional">
+    <title>{% block title %}Dashboard{% endblock %} — ClientManager Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Toast Notifications -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="toast-container" id="toastContainer">
+        {% for category, message in messages %}
+        <div class="toast toast-{{ category }}">
+            <span class="toast-icon">
+                {% if category == 'success' %}✓{% elif category == 'error' %}✕{% elif category == 'warning' %}⚠{% else %}ℹ{% endif %}
+            </span>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <button class="hamburger" id="menuToggle" aria-label="Menú">☰</button>
+        <span class="mobile-brand">ClientManager</span>
+        <button class="theme-toggle" id="themeToggleMobile" aria-label="Cambiar tema">🌙</button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="app-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">ClientManager</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard.home') }}" class="nav-link active" id="navDashboard">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar">{{ session.get('username', 'U')[0]|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ session.get('username', 'Usuario') }}</div>
+                        <div class="user-role">Administrador</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-logout">
+                    <span>⏻</span> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
