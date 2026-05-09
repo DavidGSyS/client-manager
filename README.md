@@ -62,18 +62,44 @@ Abre `http://127.0.0.1:5000` en tu navegador.
 
 ```
 client-manager/
-├── app.py              # Backend Flask + API
-├── requirements.txt    # Dependencias Python
-├── Procfile            # Deploy config
-├── static/
-│   ├── style.css       # Design system completo
-│   └── script.js       # UI interactiva
-└── templates/
-    ├── base.html       # Layout base (sidebar + nav)
-    ├── index.html      # Dashboard principal
-    ├── edit.html       # Editar cliente
-    ├── login.html      # Inicio de sesión
-    └── register.html   # Registro
+│
+├── app/
+│   │
+│   ├── __init__.py
+│   │
+│   ├── models/
+│   │   └── models.py
+│   │
+│   ├── routes/
+│   │   ├── auth.py
+│   │   ├── dashboard.py
+│   │   └── api.py
+│   │
+│   ├── static/
+│   │   ├── style.css
+│   │   ├── script.js
+│   │   └── assets/
+│   │
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── index.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   └── edit.html
+│   │
+│   └── utils/
+│       └── decorators.py
+│
+├── venv/
+│
+├── .env
+├── .gitignore
+├── Procfile
+├── requirements.txt
+├── config.py
+├── run.py
+│
+└── README.md
 ```
 
 ## 👤 Autor
