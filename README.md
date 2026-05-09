@@ -1,6 +1,6 @@
 # ClientManager Pro 🚀
 
-> Sistema de gestión de clientes profesional — Full-Stack Python/Flask
+> Sistema de gestión de clientes profesional
 
 ## ✨ Características
 
@@ -107,5 +107,3 @@ client-manager/
 David — [Portfolio de Programación](https://github.com/DavidGSyS)
 
 ---
-
-*Desarrollado como proyecto de portafolio Full-Stack.*
