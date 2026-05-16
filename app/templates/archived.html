@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Archivados{% endblock %}
+{% block content %}
+<div class="topbar">
+    <div class="topbar-left">
+        <h1>Clientes Archivados</h1>
+        <div class="page-subtitle">{{ clients|length }} cliente{% if clients|length != 1 %}s{% endif %} archivado{% if clients|length != 1 %}s{% endif %}</div>
+    </div>
+    <div class="topbar-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconDesktop"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="{{ url_for('dashboard.home') }}" class="btn btn-ghost">← Volver</a>
+    </div>
+</div>
+
+<div class="info-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Los clientes archivados no aparecen en el dashboard. Puedes restaurarlos o eliminarlos permanentemente.</span>
+</div>
+
+<div class="card clients-section">
+    <div class="clients-header">
+        <div>
+            <h2>Archivados</h2>
+            <p class="clients-subtitle">{{ clients|length }} cliente{% if clients|length != 1 %}s{% endif %}</p>
+        </div>
+        <div class="clients-controls">
+            <div class="search-wrapper">
+                <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search-input" id="searchInput" placeholder="Buscar archivados...">
+            </div>
+        </div>
+    </div>
+    <div class="table-wrapper">
+        <table class="data-table" id="clientsTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th><th>Email</th><th>Empresa</th>
+                    <th>Estado previo</th><th>Archivado el</th><th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="clientsBody">
+                {% for client in clients %}
+                <tr class="client-row animate-row" style="animation-delay:{{ loop.index0 * 0.04 }}s"
+                    data-name="{{ client.name|lower }}" data-email="{{ client.email|lower }}"
+                    data-company="{{ (client.company or '')|lower }}">
+                    <td>
+                        <div class="client-name-cell">
+                            <div class="client-avatar client-avatar--archived">
+                                {{ client.name[0]|upper }}{% if client.name.split()|length > 1 %}{{ client.name.split()[-1][0]|upper }}{% endif %}
+                            </div>
+                            <div>
+                                <div class="client-name">{{ client.name }}</div>
+                                <div class="client-id">#{{ client.id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="client-email">{{ client.email }}</td>
+                    <td class="client-company">{{ client.company or '—' }}</td>
+                    <td><span class="badge badge-{{ client.status }}">{{ 'Activo' if client.status == 'active' else 'Inactivo' }}</span></td>
+                    <td class="client-date">{{ client.updated_at.strftime('%d %b %Y') if client.updated_at else '—' }}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <a href="{{ url_for('dashboard.restore_client', id=client.id) }}" class="btn btn-sm btn-success">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.7L1 10"/></svg>
+                                Restaurar
+                            </a>
+                            <a href="{{ url_for('dashboard.delete_permanent', id=client.id) }}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('¿Eliminar permanentemente a {{ client.name }}?')">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                Eliminar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if not clients %}
+        <div class="empty-state">
+            <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></div>
+            <h3>Sin clientes archivados</h3>
+            <p>Los clientes que archives aparecerán aquí</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

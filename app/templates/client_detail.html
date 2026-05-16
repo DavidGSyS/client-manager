@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ client.name }}{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+    <div class="topbar-left">
+        <div class="breadcrumb">
+            <a href="{{ url_for('dashboard.home') }}" class="breadcrumb-link">Dashboard</a>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>{{ client.name }}</span>
+        </div>
+        <h1>Detalle del Cliente</h1>
+    </div>
+    <div class="topbar-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconDesktop"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="{{ url_for('dashboard.home') }}" class="btn btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Volver
+        </a>
+        <a href="{{ url_for('dashboard.edit_client', id=client.id) }}" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar
+        </a>
+    </div>
+</div>
+
+<div class="detail-layout">
+
+    <!-- Left: Profile Card -->
+    <div class="detail-sidebar">
+        <div class="card detail-profile-card">
+            <div class="detail-avatar">
+                {{ client.name[0]|upper }}{% if client.name.split()|length > 1 %}{{ client.name.split()[-1][0]|upper }}{% endif %}
+            </div>
+            <h2 class="detail-name">{{ client.name }}</h2>
+            <div class="detail-company">{{ client.company or 'Sin empresa' }}</div>
+
+            <div class="detail-status-wrap">
+                <a href="{{ url_for('dashboard.toggle_status', id=client.id) }}" class="badge badge-{{ client.status }} badge-lg" title="Clic para cambiar estado">
+                    {% if client.status == 'active' %}<span class="badge-pulse"></span>{% endif %}
+                    {{ 'Activo' if client.status == 'active' else 'Inactivo' }}
+                </a>
+            </div>
+
+            <div class="detail-actions">
+                <a href="{{ url_for('dashboard.edit_client', id=client.id) }}" class="btn btn-ghost" style="width: 100%; justify-content: center;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Editar cliente
+                </a>
+                <a href="{{ url_for('dashboard.delete_client', id=client.id) }}"
+                   class="btn btn-danger" style="width: 100%; justify-content: center;"
+                   onclick="return confirm('¿Eliminar a {{ client.name }}? Esta acción no se puede deshacer.')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    Eliminar cliente
+                </a>
+            </div>
+        </div>
+
+        <!-- Timestamps Card -->
+        <div class="card detail-timestamps">
+            <h3 class="detail-section-title">Registro</h3>
+            <div class="timestamp-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div>
+                    <div class="timestamp-label">Fecha de registro</div>
+                    <div class="timestamp-value">{{ client.created_at.strftime('%d de %B de %Y') if client.created_at else '—' }}</div>
+                </div>
+            </div>
+            <div class="timestamp-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <div>
+                    <div class="timestamp-label">Última actualización</div>
+                    <div class="timestamp-value">{{ client.updated_at.strftime('%d de %B de %Y') if client.updated_at else '—' }}</div>
+                </div>
+            </div>
+            <div class="timestamp-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <div>
+                    <div class="timestamp-label">ID de cliente</div>
+                    <div class="timestamp-value">#{{ client.id }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Info Cards -->
+    <div class="detail-main">
+        <!-- Contact Info -->
+        <div class="card detail-info-card">
+            <h3 class="detail-section-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.15 3.18 2 2 0 0 1 3.12 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/></svg>
+                Información de Contacto
+            </h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <a href="mailto:{{ client.email }}" class="info-value info-value--link">{{ client.email }}</a>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Teléfono</div>
+                    {% if client.phone %}
+                    <a href="tel:{{ client.phone }}" class="info-value info-value--link">{{ client.phone }}</a>
+                    {% else %}
+                    <div class="info-value info-value--empty">No especificado</div>
+                    {% endif %}
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Empresa</div>
+                    <div class="info-value">{{ client.company or 'No especificada' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value">{{ 'Activo' if client.status == 'active' else 'Inactivo' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card detail-info-card">
+            <h3 class="detail-section-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Notas
+            </h3>
+            {% if client.notes %}
+            <div class="notes-content">{{ client.notes }}</div>
+            {% else %}
+            <div class="notes-empty">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                <span>Sin notas registradas</span>
+                <a href="{{ url_for('dashboard.edit_client', id=client.id) }}" class="notes-add-link">Agregar nota</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <div class="topbar-left">
+        <h1>Estadísticas</h1>
+        <div class="page-subtitle">Análisis completo de tu base de clientes</div>
+    </div>
+    <div class="topbar-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconDesktop"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="stats-grid" style="margin-bottom:28px;">
+    <div class="card stat-card stat-card--blue">
+        <div class="stat-card-header"><div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div></div>
+        <div class="stat-label">Total Clientes</div>
+        <div class="stat-value" data-target="{{ total }}">0</div>
+        <div class="stat-change stat-change--neutral">En tu base de datos</div>
+    </div>
+    <div class="card stat-card stat-card--green">
+        <div class="stat-card-header"><div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div></div>
+        <div class="stat-label">Activos</div>
+        <div class="stat-value" data-target="{{ active }}">0</div>
+        <div class="stat-change stat-change--up">{{ active_pct }}% tasa de actividad</div>
+    </div>
+    <div class="card stat-card stat-card--orange">
+        <div class="stat-card-header"><div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div></div>
+        <div class="stat-label">Inactivos</div>
+        <div class="stat-value" data-target="{{ inactive }}">0</div>
+        <div class="stat-change stat-change--neutral">Requieren atención</div>
+    </div>
+    <div class="card stat-card stat-card--purple">
+        <div class="stat-card-header"><div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div></div>
+        <div class="stat-label">Empresas</div>
+        <div class="stat-value" data-target="{{ top_companies|length }}">0</div>
+        <div class="stat-change stat-change--neutral">Empresas distintas</div>
+    </div>
+</div>
+
+<div class="stats-charts-grid">
+
+    <!-- Growth chart -->
+    <div class="card chart-card stats-chart-lg">
+        <div class="chart-card-header">
+            <div>
+                <h3>Crecimiento acumulado</h3>
+                <p class="chart-subtitle">Total de clientes en los últimos 30 días</p>
+            </div>
+            <div class="chart-legend">
+                <span class="legend-dot legend-dot--blue"></span>
+                <span class="legend-text">Clientes</span>
+            </div>
+        </div>
+        <div class="chart-container" style="height:240px;">
+            <canvas id="growthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Doughnut -->
+    <div class="card chart-card stats-chart-sm">
+        <div class="chart-card-header">
+            <div>
+                <h3>Estado</h3>
+                <p class="chart-subtitle">Activos vs Inactivos</p>
+            </div>
+        </div>
+        <div class="chart-container" style="height:180px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+        <div class="doughnut-legend">
+            <div class="doughnut-item">
+                <span class="doughnut-dot" style="background:#22c55e"></span>
+                <span>Activos</span>
+                <strong>{{ active }}</strong>
+            </div>
+            <div class="doughnut-item">
+                <span class="doughnut-dot" style="background:#ef4444"></span>
+                <span>Inactivos</span>
+                <strong>{{ inactive }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top companies -->
+    <div class="card chart-card stats-chart-md">
+        <div class="chart-card-header">
+            <div>
+                <h3>Top Empresas</h3>
+                <p class="chart-subtitle">Clientes por empresa</p>
+            </div>
+        </div>
+        <div class="chart-container" style="height:220px;">
+            <canvas id="companiesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Weekday distribution -->
+    <div class="card chart-card stats-chart-md">
+        <div class="chart-card-header">
+            <div>
+                <h3>Día de la semana</h3>
+                <p class="chart-subtitle">Cuándo registras más clientes</p>
+            </div>
+        </div>
+        <div class="chart-container" style="height:220px;">
+            <canvas id="weekdayChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Monthly bar -->
+    <div class="card chart-card stats-chart-lg">
+        <div class="chart-card-header">
+            <div>
+                <h3>Clientes por mes</h3>
+                <p class="chart-subtitle">Últimos 6 meses</p>
+            </div>
+        </div>
+        <div class="chart-container" style="height:220px;">
+            <canvas id="monthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top companies list -->
+    <div class="card chart-card stats-chart-sm" style="display:flex;flex-direction:column;gap:0;">
+        <div class="chart-card-header">
+            <div>
+                <h3>Ranking empresas</h3>
+                <p class="chart-subtitle">Por número de clientes</p>
+            </div>
+        </div>
+        <div class="companies-list">
+            {% for company, count in top_companies %}
+            <div class="company-rank-item">
+                <div class="company-rank-name">{{ company }}</div>
+                <div class="company-rank-bar-wrap">
+                    <div class="company-rank-bar" style="width:{{ (count / top_companies[0][1] * 100)|int }}%"></div>
+                </div>
+                <div class="company-rank-count">{{ count }}</div>
+            </div>
+            {% else %}
+            <div class="companies-empty">Sin datos aún</div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const growthLabels = {{ growth_labels | tojson }};
+const growthData = {{ growth_data | tojson }};
+const activeCount = {{ active }};
+const inactiveCount = {{ inactive }};
+const companyLabels = {{ top_companies | map(attribute=0) | list | tojson }};
+const companyCounts = {{ top_companies | map(attribute=1) | list | tojson }};
+const weekdayNames = {{ weekday_names | tojson }};
+const weekdayCounts = {{ weekday_counts | tojson }};
+const monthLabels = {{ month_labels | tojson }};
+const monthData = {{ month_data | tojson }};
+
+const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: false },
+        tooltip: {
+            backgroundColor: '#18181b',
+            titleColor: '#fafafa',
+            bodyColor: '#a1a1aa',
+            borderColor: '#27272a',
+            borderWidth: 1,
+            cornerRadius: 10,
+            padding: 12,
+        }
+    }
+};
+
+const axisStyle = {
+    x: { grid: { display: false }, ticks: { color: '#71717a', font: { size: 11, family: 'Plus Jakarta Sans' } }, border: { display: false } },
+    y: { beginAtZero: true, grid: { color: 'rgba(113,113,122,0.12)' }, ticks: { color: '#71717a', font: { size: 11, family: 'Plus Jakarta Sans' }, stepSize: 1 }, border: { display: false } }
+};
+
+// Growth chart
+const growthCtx = document.getElementById('growthChart').getContext('2d');
+const growthGrad = growthCtx.createLinearGradient(0, 0, 0, 240);
+growthGrad.addColorStop(0, 'rgba(14,165,233,0.3)');
+growthGrad.addColorStop(1, 'rgba(14,165,233,0)');
+new Chart(growthCtx, {
+    type: 'line',
+    data: { labels: growthLabels, datasets: [{ data: growthData, borderColor: '#0ea5e9', backgroundColor: growthGrad, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, tension: 0.4, fill: true }] },
+    options: { ...chartDefaults, scales: axisStyle }
+});
+
+// Status doughnut
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: { labels: ['Activos', 'Inactivos'], datasets: [{ data: [activeCount, inactiveCount], backgroundColor: ['#22c55e', '#ef4444'], borderWidth: 0, hoverOffset: 4 }] },
+    options: { ...chartDefaults, cutout: '70%', plugins: { ...chartDefaults.plugins, tooltip: { ...chartDefaults.plugins.tooltip } } }
+});
+
+// Companies bar
+new Chart(document.getElementById('companiesChart'), {
+    type: 'bar',
+    data: { labels: companyLabels, datasets: [{ data: companyCounts, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6, borderSkipped: false }] },
+    options: { ...chartDefaults, indexAxis: 'y', scales: { x: axisStyle.y, y: { ...axisStyle.x, ticks: { color: '#71717a', font: { size: 11, family: 'Plus Jakarta Sans' } } } } }
+});
+
+// Weekday bar
+new Chart(document.getElementById('weekdayChart'), {
+    type: 'bar',
+    data: { labels: weekdayNames, datasets: [{ data: weekdayCounts, backgroundColor: 'rgba(14,165,233,0.7)', borderRadius: 6, borderSkipped: false }] },
+    options: { ...chartDefaults, scales: axisStyle }
+});
+
+// Monthly bar
+new Chart(document.getElementById('monthChart'), {
+    type: 'bar',
+    data: { labels: monthLabels, datasets: [{ data: monthData, backgroundColor: 'rgba(139,92,246,0.7)', borderRadius: 6, borderSkipped: false }] },
+    options: { ...chartDefaults, scales: axisStyle }
+});
+</script>
+{% endblock %}

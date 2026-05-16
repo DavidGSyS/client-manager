@@ -1,58 +1,94 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar Cliente{% endblock %}
+{% block title %}Editar — {{ client.name }}{% endblock %}
 
 {% block content %}
 <div class="topbar">
     <div class="topbar-left">
+        <div class="breadcrumb">
+            <a href="{{ url_for('dashboard.home') }}" class="breadcrumb-link">Dashboard</a>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <a href="{{ url_for('dashboard.client_detail', id=client.id) }}" class="breadcrumb-link">{{ client.name }}</a>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>Editar</span>
+        </div>
         <h1>Editar Cliente</h1>
-        <p>Modifica la información de {{ client.name }}</p>
+        <div class="page-subtitle">Modifica la información de {{ client.name }}</div>
     </div>
     <div class="topbar-right">
-        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">🌙</button>
-        <a href="{{ url_for('dashboard.home') }}" class="btn btn-ghost">← Volver</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconDesktop"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="{{ url_for('dashboard.client_detail', id=client.id) }}" class="btn btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Cancelar
+        </a>
     </div>
 </div>
 
-<div class="edit-page">
-    <div class="card">
-        <form method="POST">
-            <div class="form-row">
+<div class="edit-layout">
+    <!-- Mini profile card -->
+    <div class="edit-sidebar">
+        <div class="card edit-profile-preview">
+            <div class="detail-avatar detail-avatar--sm">
+                {{ client.name[0]|upper }}{% if client.name.split()|length > 1 %}{{ client.name.split()[-1][0]|upper }}{% endif %}
+            </div>
+            <div class="edit-preview-name">{{ client.name }}</div>
+            <div class="edit-preview-company">{{ client.company or 'Sin empresa' }}</div>
+            <div class="badge badge-{{ client.status }}" style="margin-top: 12px;">
+                {{ 'Activo' if client.status == 'active' else 'Inactivo' }}
+            </div>
+            <div class="edit-preview-id">#{{ client.id }}</div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="edit-main">
+        <div class="card edit-form-card">
+            <form method="POST">
+                <div class="edit-section-label">Información personal</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="editName">Nombre *</label>
+                        <input type="text" name="name" id="editName" class="form-input" value="{{ client.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editEmail">Email *</label>
+                        <input type="email" name="email" id="editEmail" class="form-input" value="{{ client.email }}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="editPhone">Teléfono</label>
+                        <input type="text" name="phone" id="editPhone" class="form-input" value="{{ client.phone or '' }}" placeholder="+57 300 000 0000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editCompany">Empresa</label>
+                        <input type="text" name="company" id="editCompany" class="form-input" value="{{ client.company or '' }}" placeholder="Nombre de empresa">
+                    </div>
+                </div>
+
+                <div class="edit-section-label" style="margin-top: 24px;">Estado y notas</div>
                 <div class="form-group">
-                    <label class="form-label">Nombre *</label>
-                    <input type="text" name="name" class="form-input" value="{{ client.name }}" required>
+                    <label class="form-label" for="editStatus">Estado</label>
+                    <select name="status" id="editStatus" class="form-input">
+                        <option value="active" {{ 'selected' if client.status == 'active' }}>✅ Activo</option>
+                        <option value="inactive" {{ 'selected' if client.status == 'inactive' }}>⏸️ Inactivo</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email *</label>
-                    <input type="email" name="email" class="form-input" value="{{ client.email }}" required>
+                    <label class="form-label" for="editNotes">Notas</label>
+                    <textarea name="notes" id="editNotes" class="form-input" rows="4" placeholder="Información adicional sobre el cliente...">{{ client.notes or '' }}</textarea>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Teléfono</label>
-                    <input type="text" name="phone" class="form-input" value="{{ client.phone or '' }}">
+                <div class="form-actions">
+                    <a href="{{ url_for('dashboard.client_detail', id=client.id) }}" class="btn btn-ghost">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Guardar Cambios
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Empresa</label>
-                    <input type="text" name="company" class="form-input" value="{{ client.company or '' }}">
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Estado</label>
-                <select name="status" class="form-input">
-                    <option value="active" {{ 'selected' if client.status == 'active' }}>Activo</option>
-                    <option value="inactive" {{ 'selected' if client.status == 'inactive' }}>Inactivo</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Notas</label>
-                <textarea name="notes" class="form-input">{{ client.notes or '' }}</textarea>
-            </div>
-            <div class="form-actions">
-                <a href="{{ url_for('dashboard.home') }}" class="btn btn-ghost">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

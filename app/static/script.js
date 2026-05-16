@@ -20,9 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateThemeIcon(theme) {
-        const icon = theme === 'dark' ? '🌙' : '☀️';
-        if (themeToggle) themeToggle.textContent = icon;
-        if (themeToggleMobile) themeToggleMobile.textContent = icon;
+        const moonPath = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+        const sunPaths = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+        const svgContent = theme === 'dark' ? moonPath : sunPaths;
+        ['themeIconDesktop', 'themeIconMobile'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = svgContent;
+        });
     }
 
     if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
@@ -37,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sidebar) sidebar.classList.add('open');
         if (overlay) overlay.classList.add('active');
     }
-
     function closeSidebar() {
         if (sidebar) sidebar.classList.remove('open');
         if (overlay) overlay.classList.remove('active');
@@ -70,6 +73,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, 3500);
 
+    // ── Animated Stat Counters ──
+    document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'), 10);
+        const suffix = el.getAttribute('data-suffix') || '';
+        if (isNaN(target)) return;
+        let start = 0;
+        const duration = 900;
+        const startTime = performance.now();
+
+        function step(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const value = Math.round(eased * target);
+            el.textContent = value + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    });
+
     // ── Search, Filter, Sort, Pagination ──
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
@@ -94,9 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = row.getAttribute('data-name') || '';
             const email = row.getAttribute('data-email') || '';
             const company = row.getAttribute('data-company') || '';
+            const phone = row.getAttribute('data-phone') || '';
             const rowStatus = row.getAttribute('data-status') || '';
 
-            const matchSearch = !query || name.includes(query) || email.includes(query) || company.includes(query);
+            const matchSearch = !query ||
+                name.includes(query) ||
+                email.includes(query) ||
+                company.includes(query) ||
+                phone.includes(query);
             const matchStatus = !status || rowStatus === status;
 
             return matchSearch && matchStatus;
@@ -107,10 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function render() {
-        // Hide all
         allRows.forEach(r => r.style.display = 'none');
 
-        // Pagination calc
         const total = filteredRows.length;
         const pages = Math.max(1, Math.ceil(total / PER_PAGE));
         if (currentPage > pages) currentPage = pages;
@@ -118,20 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const end = Math.min(start + PER_PAGE, total);
         const pageRows = filteredRows.slice(start, end);
 
-        // Show current page rows
         pageRows.forEach(r => r.style.display = '');
 
-        // Pagination info
         if (paginationInfo) {
             paginationInfo.textContent = total > 0
                 ? `Mostrando ${start + 1}–${end} de ${total}`
                 : 'Sin resultados';
         }
 
-        // Pagination buttons
         if (paginationButtons) {
             paginationButtons.innerHTML = '';
-
             if (pages > 1) {
                 const prevBtn = createPageBtn('←', currentPage > 1, () => { currentPage--; render(); });
                 paginationButtons.appendChild(prevBtn);
@@ -157,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return btn;
     }
 
-    // Search
     if (searchInput) searchInput.addEventListener('input', applyFilters);
     if (statusFilter) statusFilter.addEventListener('change', applyFilters);
 
@@ -173,12 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sortDir = 'asc';
             }
 
-            // Update header UI
             document.querySelectorAll('.data-table th').forEach(h => h.classList.remove('sorted'));
             th.classList.add('sorted');
             th.querySelector('.sort-icon').textContent = sortDir === 'asc' ? '↑' : '↓';
 
-            // Sort filtered rows
             filteredRows.sort((a, b) => {
                 const aVal = (a.getAttribute('data-' + col) || '').toLowerCase();
                 const bVal = (b.getAttribute('data-' + col) || '').toLowerCase();
@@ -187,14 +206,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return 0;
             });
 
-            // Re-order DOM
             filteredRows.forEach(row => tableBody.appendChild(row));
             currentPage = 1;
             render();
         });
     });
 
-    // Initial render
     applyFilters();
 
     // ── Chart.js ──
@@ -202,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chartCanvas && typeof Chart !== 'undefined' && typeof chartLabels !== 'undefined') {
         const ctx = chartCanvas.getContext('2d');
         const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-        gradient.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+        gradient.addColorStop(0, 'rgba(14, 165, 233, 0.35)');
         gradient.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
 
         new Chart(ctx, {
@@ -215,10 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderColor: '#0ea5e9',
                     backgroundColor: gradient,
                     borderWidth: 2.5,
-                    pointRadius: 4,
+                    pointRadius: 5,
                     pointBackgroundColor: '#0ea5e9',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
+                    pointHoverRadius: 7,
                     tension: 0.4,
                     fill: true,
                 }]
@@ -234,22 +252,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         bodyColor: '#a1a1aa',
                         borderColor: '#27272a',
                         borderWidth: 1,
-                        cornerRadius: 8,
-                        padding: 12,
+                        cornerRadius: 10,
+                        padding: 14,
                     }
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#71717a', font: { size: 12 } },
+                        ticks: { color: '#71717a', font: { size: 12, family: 'Plus Jakarta Sans' } },
                         border: { display: false },
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(113,113,122,0.15)' },
+                        grid: { color: 'rgba(113,113,122,0.12)' },
                         ticks: {
                             color: '#71717a',
-                            font: { size: 12 },
+                            font: { size: 12, family: 'Plus Jakarta Sans' },
                             stepSize: 1,
                         },
                         border: { display: false },
@@ -259,5 +277,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Global Search (Ctrl+K / Cmd+K) ──
+    const searchOverlay = document.getElementById('globalSearchOverlay');
+    const globalInput = document.getElementById('globalSearchInput');
+    const searchResults = document.getElementById('globalSearchResults');
+    const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
+    const emptySearchHTML = '<div class="search-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Escribe para buscar clientes</p></div>';
+
+    function openGlobalSearch() {
+        if (!searchOverlay) return;
+        searchOverlay.classList.add('active');
+        setTimeout(() => { if (globalInput) globalInput.focus(); }, 50);
+    }
+
+    function closeGlobalSearch() {
+        if (!searchOverlay) return;
+        searchOverlay.classList.remove('active');
+        if (globalInput) globalInput.value = '';
+        if (searchResults) searchResults.innerHTML = emptySearchHTML;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            (searchOverlay && searchOverlay.classList.contains('active')) ? closeGlobalSearch() : openGlobalSearch();
+        }
+        if (e.key === 'Escape' && searchOverlay && searchOverlay.classList.contains('active')) {
+            closeGlobalSearch();
+        }
+    });
+
+    if (sidebarSearchBtn) sidebarSearchBtn.addEventListener('click', openGlobalSearch);
+    if (searchOverlay) searchOverlay.addEventListener('click', (e) => { if (e.target === searchOverlay) closeGlobalSearch(); });
+
+    let searchTimeout = null;
+    if (globalInput) {
+        globalInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const q = globalInput.value.trim();
+            if (q.length < 2) {
+                searchResults.innerHTML = emptySearchHTML;
+                return;
+            }
+            searchTimeout = setTimeout(() => {
+                fetch('/api/search?q=' + encodeURIComponent(q))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.length) {
+                            searchResults.innerHTML = '<div class="search-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Sin resultados</p></div>';
+                            return;
+                        }
+                        searchResults.innerHTML = data.map((c, i) =>
+                            '<a href="' + c.url + '" class="search-result-item" data-idx="' + i + '">' +
+                            '<div class="search-result-avatar">' + c.initials + '</div>' +
+                            '<div class="search-result-info">' +
+                            '<div class="search-result-name">' + c.name + '</div>' +
+                            '<div class="search-result-meta">' + c.email + (c.company ? ' · ' + c.company : '') + '</div>' +
+                            '</div>' +
+                            '<span class="search-result-badge ' + (c.status === 'active' ? '' : 'inactive') + '">' + (c.status === 'active' ? 'Activo' : 'Inactivo') + '</span>' +
+                            '</a>'
+                        ).join('');
+                    }).catch(() => {});
+            }, 200);
+        });
+
+        globalInput.addEventListener('keydown', (e) => {
+            const items = searchResults.querySelectorAll('.search-result-item');
+            const sel = searchResults.querySelector('.selected');
+            let idx = sel ? parseInt(sel.getAttribute('data-idx')) : -1;
+            if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx + 1, items.length - 1); items.forEach(i => i.classList.remove('selected')); if (items[idx]) items[idx].classList.add('selected'); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx - 1, 0); items.forEach(i => i.classList.remove('selected')); if (items[idx]) items[idx].classList.add('selected'); }
+            else if (e.key === 'Enter') { const s = searchResults.querySelector('.selected'); if (s) { window.location.href = s.getAttribute('href'); closeGlobalSearch(); } }
+        });
+    }
+
+    // Archived page filter
+    const archivedSearch = document.getElementById('searchInput');
+    if (archivedSearch && !document.getElementById('statusFilter')) {
+        const rows = Array.from(document.querySelectorAll('#clientsBody .client-row'));
+        archivedSearch.addEventListener('input', () => {
+            const q = archivedSearch.value.toLowerCase().trim();
+            rows.forEach(row => {
+                const ok = !q || (row.getAttribute('data-name') || '').includes(q) ||
+                    (row.getAttribute('data-email') || '').includes(q) ||
+                    (row.getAttribute('data-company') || '').includes(q);
+                row.style.display = ok ? '' : 'none';
+            });
+        });
+    }
 
 });

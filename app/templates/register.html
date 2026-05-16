@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Crea tu cuenta en ClientManager Pro">
     <title>Crear Cuenta — ClientManager Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <!-- Toasts -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="toast-container" id="toastContainer">
@@ -23,44 +26,109 @@
     {% endif %}
     {% endwith %}
 
-    <div class="auth-page">
-        <div class="auth-card card">
-            <div class="auth-brand">
-                <h1>ClientManager</h1>
-                <p>Crea tu cuenta gratuita</p>
+    <div class="auth-split">
+
+        <!-- Left Panel — Brand -->
+        <div class="auth-panel auth-panel--brand">
+            <div class="auth-panel-content">
+                <div class="auth-logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>ClientManager</span>
+                    <span class="auth-logo-badge">Pro</span>
+                </div>
+
+                <div class="auth-panel-hero">
+                    <h2>Empieza gratis<br>en segundos</h2>
+                    <p>Crea tu cuenta y comienza a gestionar tus clientes de forma profesional desde hoy mismo.</p>
+                </div>
+
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span>Sin límite de clientes</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span>Datos totalmente privados</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span>Acceso inmediato</span>
+                    </div>
+                </div>
+
+                <div class="auth-blob auth-blob--1"></div>
+                <div class="auth-blob auth-blob--2"></div>
             </div>
+        </div>
 
-            <form method="POST" class="auth-form">
-                <div class="form-group">
-                    <label class="form-label">Usuario</label>
-                    <input type="text" name="username" class="form-input" placeholder="Elige un nombre de usuario" required>
+        <!-- Right Panel — Form -->
+        <div class="auth-panel auth-panel--form">
+            <div class="auth-form-wrap">
+                <div class="auth-form-header">
+                    <h1>Crear cuenta</h1>
+                    <p>Completa los datos para registrarte</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-input" placeholder="correo@ejemplo.com" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
-                </div>
-                <button type="submit" class="btn btn-primary auth-submit">Crear Cuenta</button>
-            </form>
 
-            <div class="auth-footer">
-                ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a>
+                <form method="POST" class="auth-form" id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label" for="regUsername">Nombre de usuario</label>
+                        <div class="input-icon-wrap">
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input type="text" name="username" id="regUsername" class="form-input form-input--icon" placeholder="Elige un nombre de usuario" required minlength="3" autocomplete="username">
+                        </div>
+                        <div class="form-hint">Mínimo 3 caracteres</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword">Contraseña</label>
+                        <div class="input-icon-wrap">
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <input type="password" name="password" id="regPassword" class="form-input form-input--icon" placeholder="Crea una contraseña segura" required minlength="6" autocomplete="new-password">
+                            <button type="button" class="input-action" id="toggleRegPassword" aria-label="Mostrar contraseña">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <div class="form-hint">Mínimo 6 caracteres</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary auth-submit" id="registerSubmit">
+                        Crear cuenta
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                </form>
+
+                <div class="auth-divider"><span>¿Ya tienes cuenta?</span></div>
+
+                <a href="{{ url_for('auth.login') }}" class="btn btn-ghost auth-switch-btn">
+                    Iniciar sesión
+                </a>
             </div>
         </div>
     </div>
 
     <script>
+        const saved = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+
         setTimeout(() => {
             document.querySelectorAll('.toast').forEach(t => {
                 t.classList.add('fade-out');
                 setTimeout(() => t.remove(), 300);
             });
         }, 3500);
-        const saved = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', saved);
+
+        const togglePw = document.getElementById('toggleRegPassword');
+        if (togglePw) {
+            togglePw.addEventListener('click', () => {
+                const pw = document.getElementById('regPassword');
+                pw.type = pw.type === 'password' ? 'text' : 'password';
+            });
+        }
     </script>
 </body>
 </html>

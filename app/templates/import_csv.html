@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Importar CSV{% endblock %}
+{% block content %}
+<div class="topbar">
+    <div class="topbar-left">
+        <h1>Importar Clientes</h1>
+        <div class="page-subtitle">Agrega múltiples clientes desde un archivo CSV</div>
+    </div>
+    <div class="topbar-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconDesktop"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="{{ url_for('dashboard.template_csv') }}" class="btn btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Descargar Plantilla
+        </a>
+    </div>
+</div>
+
+{% if done %}
+    <!-- Result screen -->
+    <div class="import-result-card card">
+        <div class="import-result-icon {% if imported > 0 %}import-result-icon--success{% else %}import-result-icon--warning{% endif %}">
+            {% if imported > 0 %}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            {% else %}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {% endif %}
+        </div>
+        <h2 class="import-result-title">
+            {% if imported > 0 %}¡Importación completada!{% else %}Importación con problemas{% endif %}
+        </h2>
+        <p class="import-result-subtitle">
+            <strong>{{ imported }}</strong> cliente{% if imported != 1 %}s{% endif %} importado{% if imported != 1 %}s{% endif %} correctamente.
+            {% if errors %}<strong>{{ errors|length }}</strong> error{% if errors|length != 1 %}es{% endif %}.{% endif %}
+        </p>
+
+        {% if errors %}
+        <div class="import-errors">
+            <div class="import-errors-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Errores encontrados:
+            </div>
+            {% for error in errors %}
+            <div class="import-error-item">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="import-result-actions">
+            <a href="{{ url_for('dashboard.home') }}" class="btn btn-primary">Ver dashboard</a>
+            <a href="{{ url_for('dashboard.import_csv') }}" class="btn btn-ghost">Importar más</a>
+        </div>
+    </div>
+
+{% else %}
+    <!-- Upload form -->
+    <div class="import-layout">
+        <div class="card import-form-card">
+            <div class="import-form-header">
+                <div class="import-form-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <div>
+                    <h2>Subir archivo CSV</h2>
+                    <p>Selecciona tu archivo para importar los clientes</p>
+                </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="importForm">
+                <div class="dropzone" id="dropzone">
+                    <input type="file" name="csv_file" id="csvFile" accept=".csv" class="dropzone-input">
+                    <div class="dropzone-content" id="dropzoneContent">
+                        <div class="dropzone-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <div class="dropzone-text">
+                            <strong>Haz clic o arrastra tu archivo aquí</strong>
+                            <span>Solo archivos .CSV</span>
+                        </div>
+                    </div>
+                    <div class="dropzone-selected" id="dropzoneSelected" style="display:none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span id="selectedFileName">archivo.csv</span>
+                    </div>
+                </div>
+                <div class="form-actions" style="margin-top:20px;">
+                    <a href="{{ url_for('dashboard.home') }}" class="btn btn-ghost">Cancelar</a>
+                    <button type="submit" class="btn btn-primary" id="importSubmit" disabled>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Importar Clientes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Instructions -->
+        <div class="card import-instructions">
+            <h3>Formato del CSV</h3>
+            <p>Tu archivo CSV debe tener las siguientes columnas:</p>
+            <div class="csv-columns">
+                <div class="csv-col csv-col--required"><span class="csv-col-name">nombre</span><span class="csv-col-badge csv-col-badge--required">Requerido</span></div>
+                <div class="csv-col csv-col--required"><span class="csv-col-name">email</span><span class="csv-col-badge csv-col-badge--required">Requerido</span></div>
+                <div class="csv-col"><span class="csv-col-name">telefono</span><span class="csv-col-badge">Opcional</span></div>
+                <div class="csv-col"><span class="csv-col-name">empresa</span><span class="csv-col-badge">Opcional</span></div>
+                <div class="csv-col"><span class="csv-col-name">notas</span><span class="csv-col-badge">Opcional</span></div>
+                <div class="csv-col"><span class="csv-col-name">estado</span><span class="csv-col-badge">active / inactive</span></div>
+            </div>
+            <div class="import-tip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Descarga la plantilla para ver el formato exacto.
+            </div>
+            <a href="{{ url_for('dashboard.template_csv') }}" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:16px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar plantilla CSV
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+{% block scripts %}
+<script>
+const fileInput = document.getElementById('csvFile');
+const dropzone = document.getElementById('dropzone');
+const dropzoneContent = document.getElementById('dropzoneContent');
+const dropzoneSelected = document.getElementById('dropzoneSelected');
+const selectedFileName = document.getElementById('selectedFileName');
+const submitBtn = document.getElementById('importSubmit');
+
+if (fileInput) {
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            selectedFileName.textContent = fileInput.files[0].name;
+            dropzoneContent.style.display = 'none';
+            dropzoneSelected.style.display = 'flex';
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    });
+
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dropzone--over'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dropzone--over'));
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dropzone--over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.csv')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            selectedFileName.textContent = file.name;
+            dropzoneContent.style.display = 'none';
+            dropzoneSelected.style.display = 'flex';
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}
